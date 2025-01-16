@@ -1,32 +1,19 @@
+// NearbyVendorsPage.js
 import React, { useEffect, useState } from 'react';
 import VendorCard from './VendorCard';
 import Footer from './Footer';
 import api from '../api/api';
-import { geocodeAddress } from '../utils/googleMapsLoader';
-import { processVendorCoordinates } from '../utils/coordinateUtils';
+import { enrichVendor } from '../utils/coordinateUtils';
 
 const NearbyVendorsPage = ({ searchQuery }) => {
   const [vendors, setVendors] = useState([]);
-  const [parsedAddress, setParsedAddress] = useState({ 
-    street: '', 
-    city: '', 
-    stateAbbreviation: '' 
-  });
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
-
-  // Calculate distance between two points
-  const calculateDistance = (lat1, lng1, lat2, lng2) => {
-    const toRadians = (degree) => (degree * Math.PI) / 180;
-    const R = 3963; // Earth's radius in miles
-    const dLat = toRadians(lat2 - lat1);
-    const dLng = toRadians(lng2 - lng1);
-    const a =
-      Math.sin(dLat / 2) * Math.sin(dLat / 2) +
-      Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) * Math.sin(dLng / 2) * Math.sin(dLng / 2);
-    const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c;
-  };
+  const [parsedAddress, setParsedAddress] = useState({
+    street: '',
+    city: '',
+    stateAbbreviation: ''
+  });
 
   // Process saved address when component mounts
   useEffect(() => {
@@ -41,8 +28,8 @@ const NearbyVendorsPage = ({ searchQuery }) => {
     }
   }, []);
 
-  // Fetch and process vendors
   const fetchVendors = async () => {
+    setLoading(true);
     try {
       const savedAddress = localStorage.getItem('userAddress');
       if (!savedAddress) {
@@ -65,7 +52,7 @@ const NearbyVendorsPage = ({ searchQuery }) => {
       console.log('User location:', { lat, lng });
 
       // Fetch nearby vendors
-      const { data: vendorsData } = await api.get('/api/vendors/nearby', {
+      const { data: vendorsData } = await api.get('/api/map/map-vendors', {
         params: { lat, lng }
       });
 
@@ -73,77 +60,28 @@ const NearbyVendorsPage = ({ searchQuery }) => {
         throw new Error('No vendors found near your location');
       }
 
-      console.log('Total vendors found:', vendorsData.vendors.length);
-
-      // Process vendors and their coordinates
+      // Process vendors with the utility function
       const processedVendors = vendorsData.vendors
         .filter(vendor => ['Delivery', 'Pickup & Delivery'].includes(vendor.dispensaryType))
-        .map(vendor => {
-          // Extract and validate coordinates
-          let coordinates = null;
-          
-          // For Pickup & Delivery vendors, try storefront first
-          if (vendor.dispensaryType === 'Pickup & Delivery' && vendor.storefrontAddress?.coordinates) {
-            coordinates = processVendorCoordinates(vendor);
-          }
-          
-          // If no valid coordinates yet, try delivery zone
-          if (!coordinates && vendor.deliveryZone?.coordinates) {
-            coordinates = vendor.deliveryZone.coordinates.map(coord => {
-              if (coord && typeof coord === 'object' && coord.$numberDouble !== undefined) {
-                return parseFloat(coord.$numberDouble);
-              }
-              return parseFloat(coord);
-            });
-          }
+        .map(vendor => enrichVendor(vendor, lat, lng))
+        .filter(Boolean)
+        .sort((a, b) => a.milesAway - b.milesAway);
 
-          if (!coordinates || coordinates.length !== 2) {
-            console.warn(`Invalid coordinates for vendor ${vendor.dispensaryName}`);
-            return null;
-          }
-
-          const [vLng, vLat] = coordinates;
-
-          // Calculate distance from user location
-          const milesAway = parseFloat(calculateDistance(
-            lat,
-            lng,
-            vLat,
-            vLng
-          ).toFixed(1));
-
-          return {
-            ...vendor,
-            coordinates,
-            milesAway
-          };
-        })
-        .filter(Boolean) // Remove null entries
-        .sort((a, b) => a.milesAway - b.milesAway); // Sort by distance
-
-      console.log('Processed vendors:', processedVendors.length);
+      console.log('Processed vendors:', processedVendors);
       setVendors(processedVendors);
-
+      setError(null);
     } catch (error) {
       console.error('Error fetching vendors:', error);
       setError(error.message || 'Failed to load vendors');
+      setVendors([]);
+    } finally {
+      setLoading(false);
     }
   };
 
   // Initial load of vendors
   useEffect(() => {
-    const loadVendors = async () => {
-      setLoading(true);
-      try {
-        await fetchVendors();
-      } catch (error) {
-        setError(error.message);
-      } finally {
-        setLoading(false);
-      }
-    };
-
-    loadVendors();
+    fetchVendors();
   }, []);
 
   // Filter vendors based on search query
@@ -160,24 +98,26 @@ const NearbyVendorsPage = ({ searchQuery }) => {
     return { ...vendor, products: filteredProducts };
   });
 
-  // Render component
   return (
     <div className="container-fluid p-0">
       <div className="vendor-list">
         {loading ? (
-          <p>Loading vendors...</p>
+          <p className="text-center my-4">Loading vendors...</p>
         ) : error ? (
-          <p className="text-danger">{error}</p>
-        ) : filteredVendors.length ? (
+          <p className="text-danger text-center my-4">{error}</p>
+        ) : filteredVendors.length > 0 ? (
           filteredVendors.map((vendor) => (
             <div key={vendor._id} className="vendors-page vendor-card-wrapper">
-              <VendorCard vendor={vendor} />
+              <VendorCard 
+                vendor={vendor}
+                orderType="Delivery"
+              />
             </div>
           ))
-        ) : searchQuery ? (
-          <p className="text-center text-muted my-4">No vendors match your search.</p>
         ) : (
-          <p className="text-center text-muted my-4">No vendors found in your area.</p>
+          <p className="text-center text-muted my-4">
+            {searchQuery ? 'No vendors match your search.' : 'No vendors found in your area.'}
+          </p>
         )}
       </div>
       <Footer />

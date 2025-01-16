@@ -181,6 +181,9 @@ const customerRoutes = require('./routes/customerRoutes');
 const vendorProductRoutes = require('./routes/vendorProductRoutes');
 const vendorRoutes = require('./routes/vendorRoutes');
 const geocodeRoutes = require('./routes/geocodeRoutes');
+const mapVendorRoutes = require('./routes/mapVendorRoutes');
+
+app.use('/api/map', mapVendorRoutes);
 
 // Mount routes
 app.use('/api/auth', authRoutes);

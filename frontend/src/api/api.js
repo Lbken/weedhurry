@@ -1,8 +1,19 @@
 import axios from 'axios';
 
+// Environment-based configuration
+const ENV = {
+    development: 'http://localhost:5001',
+    production: 'https://api.weedhurry.com'
+};
+
+// Get current environment
+const isDevelopment = process.env.NODE_ENV === 'development';
+const baseURL = isDevelopment ? ENV.development : ENV.production;
+
 const api = axios.create({
-    baseURL: 'https://api.weedhurry.com',
+    baseURL,
     withCredentials: true,
+    timeout: 10000, // Add timeout for better error handling
 });
 
 // Interceptor to handle 401 errors and refresh tokens
@@ -20,47 +31,73 @@ api.interceptors.response.use(
         if (error.response?.status === 401) {
             originalRequest._retry = true;
             try {
-                // Attempt to refresh the token
+                // Use environment-based URL for refresh token
+                const refreshURL = `${baseURL}/api/auth/refresh-token`;
                 const refreshResponse = await axios.post(
-                    'https://api.weedhurry.com/api/auth/refresh-token',
+                    refreshURL,
                     {},
-                    {
-                        withCredentials: true // Use cookies instead of headers
-                    }
+                    { withCredentials: true }
                 );
 
-                // If refresh successful, retry the original request
                 if (refreshResponse.data?.success) {
                     return api(originalRequest);
                 } else {
-                    // If refresh failed, clear auth and redirect
                     handleAuthFailure();
                 }
             } catch (refreshError) {
                 console.error('Token refresh failed:', refreshError);
                 handleAuthFailure();
+                return Promise.reject(refreshError);
             }
+        }
+
+        // Handle other common errors
+        if (error.response?.status === 503) {
+            console.error('Service temporarily unavailable');
         }
 
         return Promise.reject(error);
     }
 );
 
-// Helper function to handle authentication failures
+// Enhanced helper function to handle authentication failures
 const handleAuthFailure = () => {
     const publicRoutes = ['/', '/nearby', '/login', '/register'];
     
-    // Clear cookies
-    document.cookie = 'accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.weedhurry.com; Secure; SameSite=None';
-    document.cookie = 'refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.weedhurry.com; Secure; SameSite=None';
+    // Get the domain dynamically
+    const domain = isDevelopment ? 'localhost' : '.weedhurry.com';
+    
+    // Clear cookies with environment-aware domain
+    const cookieOptions = `Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; ${
+        !isDevelopment ? `Domain=${domain};` : ''
+    } ${!isDevelopment ? 'Secure; SameSite=None' : ''}`;
+    
+    document.cookie = `accessToken=; ${cookieOptions}`;
+    document.cookie = `refreshToken=; ${cookieOptions}`;
     
     // Clear any local storage
     localStorage.removeItem('auth');
+    sessionStorage.removeItem('auth'); // Also clear session storage
 
     // Only redirect to login if not on a public route
     if (!publicRoutes.includes(window.location.pathname)) {
         window.location.href = '/login';
     }
 };
+
+// Add request interceptor for common headers
+api.interceptors.request.use(
+    (config) => {
+        // Add timestamp to prevent caching
+        config.params = {
+            ...config.params,
+            _t: Date.now()
+        };
+        return config;
+    },
+    (error) => {
+        return Promise.reject(error);
+    }
+);
 
 export default api;
