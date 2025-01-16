@@ -1,0 +1,49 @@
+.card {
+  background: #ffffff;
+  border-radius: 8px;
+  border: none;
+}
+
+.card-title {
+  color: #333;
+  font-weight: 600;
+}
+
+.form-label {
+  font-weight: 500;
+  color: #555;
+}
+
+.form-control:focus {
+  border-color: #80bdff;
+  box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+.btn-primary {
+  background-color: #0d6efd;
+  border: none;
+  padding: 12px;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #0b5ed7;
+}
+
+.btn-primary:disabled {
+  background-color: #6c757d;
+  cursor: not-allowed;
+}
+
+.form-check-input:checked {
+  background-color: #0d6efd;
+  border-color: #0d6efd;
+}
+
+/* Map container styles */
+.google-map-container {
+  border-radius: 8px;
+  overflow: hidden;
+  border: 1px solid #dee2e6;
+}

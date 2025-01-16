@@ -1,0 +1,56 @@
+/* Import Poppins font with specific weights */
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
+
+
+
+/* Apply Poppins font globally */
+body, html {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  background-color: #F8F9FA;
+}
+
+/* Utility classes for font weights */
+
+/* Light (300) */
+.font-light {
+  font-weight: 300;
+}
+
+/* Regular (400) */
+.font-regular {
+  font-weight: 400;
+}
+
+/* Medium (500) */
+.font-medium {
+  font-weight: 500;
+}
+
+/* Semi-Bold (600) */
+.font-semibold {
+  font-weight: 600;
+}
+
+/* Bold (700) */
+.font-bold {
+  font-weight: 700;
+}
+
+/* General text styling (optional) */
+h1, h2, h3, h4, h5, h6 {
+  font-family: 'Poppins', sans-serif;
+  margin: 0;
+}
+
+p {
+  font-family: 'Poppins', sans-serif;
+  margin: 0 0 1rem;
+}
+
+.pac-container {
+    z-index: 1100 !important; /* Ensure it overrides any conflicting styles */
+}
+

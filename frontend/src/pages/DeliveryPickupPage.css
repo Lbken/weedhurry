@@ -1,0 +1,37 @@
+
+
+/* Slide-in animation */
+@keyframes slideInFromBottom {
+    0% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+    100% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+  }
+
+
+  /* Slide-out animation */
+@keyframes slideOutToBottom {
+    0% {
+      transform: translateY(0);
+      opacity: 1;
+    }
+    100% {
+      transform: translateY(100%);
+      opacity: 0;
+    }
+  }
+  
+  .delivery-pickup-page {
+    animation: slideInFromBottom 0.2s ease-out;
+    overflow-x: visible; /* Prevent horizontal scrolling during animation */
+    min-height: 100vh;
+    background-color: #F8F9FA; /* Light gray background */
+  }
+  
+  .delivery-pickup-page.slide-out {
+    animation: slideOutToBottom 0.2s ease-out;
+  }

@@ -1,0 +1,57 @@
+.vendor-details {
+  position: relative;
+  z-index: 10;
+}
+  
+  .vendor-details h6 {
+    margin-bottom: 0.3rem; /* Ensure spacing below the heading */
+  }
+  
+  .vendor-details .status-circle {
+    margin-right: 0.5rem;
+  }
+  
+  .vendor-details .badge {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.75rem;
+    margin-bottom: 0.2rem; /* Add spacing between badges */
+  }
+  
+  .vendor-details .promo-button {
+    margin-top: 0.4rem;
+    padding: 0.3rem 0.5rem;
+    font-size: 0.8rem;
+  }
+  
+.vendor-logo {
+    width: 40px;
+    height: 40px;
+  }
+  
+  #vendor-status-dropdown .dropdown-header {
+    font-weight: bold;
+    font-size: 0.9rem;
+    color: #333;
+    z-index: 20;
+  }
+  
+  #vendor-status-dropdown .dropdown-item {
+    font-size: 0.9rem;
+    z-index: 20;
+  }
+  
+  #vendor-status-dropdown div {
+    font-size: 0.85rem;
+    margin-bottom: 0.5rem;
+    z-index: 20;
+  }
+  
+  .status-circle {
+    margin-right: 0.5rem;
+  }
+  .vendor-details.card {
+    border-top-left-radius: 1rem;
+    border-top-right-radius: 1rem;
+    box-shadow: 0 -4px 6px -1px rgba(0, 0, 0, 0.1);
+    background-color: #f1f1f1;
+  }

@@ -1,0 +1,56 @@
+.navbar {
+    z-index: 1040; /* Lower than the shared-card */
+}
+
+.location-selector {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 12px;
+    border-radius: 20px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    background-color: white;
+    border: 1px solid #e5e7eb;
+}
+  
+.location-selector:hover {
+    background-color: #f3f4f6;
+    transform: translateY(-1px);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+}
+  
+.location-selector:active {
+    transform: translateY(0);
+  }
+  
+.location-icon {
+    color: #4b5563;
+    transition: color 0.2s ease;
+}
+  
+.location-selector:hover .location-icon {
+    color: #2563eb;
+}
+  
+.address-text {
+    font-family: 'Poppins', sans-serif;
+    font-size: 14px;
+    font-weight: 500;
+    color: #374151;
+    margin-top: 1px;
+    max-width: 200px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  
+  @media (max-width: 768px) {
+    .address-text {
+      max-width: 150px;
+    }
+    
+    .location-selector {
+      padding: 6px 10px;
+    }
+  }

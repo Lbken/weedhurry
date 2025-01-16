@@ -1,0 +1,14 @@
+.btn-link:hover {
+    color: #6c757d !important;
+    background-color: transparent !important;
+  }
+  
+  .btn-link:focus {
+    box-shadow: none !important;
+  }
+  
+  .search-dropdown-menu {
+    transform: none !important;
+    top: 100% !important;
+    left: 0 !important;
+  }

@@ -1,0 +1,52 @@
+[
+    {
+      "name": "Blue Dream",
+      "classification": ["Sativa","Hybrid"],
+      "description": "A legendary hybrid with sativa-dominant qualities, Blue Dream is a cross between Blueberry and Haze. Known for its sweet berry aroma and smooth, uplifting effects, it offers a balance of cerebral invigoration and full-body relaxation. This strain is favored by creative professionals and often referenced in pop culture for its dreamy euphoria.",
+      "effects": ["Uplifted", "Creative", "Relaxed"]
+    },
+    {
+      "name": "Animal Mints",
+      "classification": "Hybrid",
+      "description": "Animal Mints is a balanced hybrid with a luxurious lineage, blending Animal Cookies, GSC (formerly Girl Scout Cookies), and Blue Power. It boasts dense, frosty buds with a minty, earthy aroma and a hint of vanilla. Known for its calming effects, GDP has gained popularity among those seeking stress relief or nighttime relaxation. Its strong potency makes it a favorite for seasoned consumers.",
+      "effects": ["Uplifted", "Euphoric", "Relaxed"]
+    },
+    {
+      "name": "Granddaddy Purple",
+      "classification": "Indica",
+      "description": "A classic indica, Granddaddy Purple (GDP) is a cross of Big Bud and Purple Urkle. Its grape-like aroma and deep purple hues have made it a cultural icon. Known for its deeply relaxing effects, GDP is often used to alleviate insomnia, stress, and pain.",
+      "effects": ["Relaxed", "Euphoric", "Sleepy"]
+
+    },
+    {
+      "name": "Animal Cookies",
+      "classification": ["Hybrid", "Indica"],
+      "description": "A potent indica-dominant hybrid, Animal Cookies is a cross between Girl Scout Cookies and Fire OG. With dense, frosty buds, it exudes a sweet, sour aroma reminiscent of cookie dough and cherries. Known for its relaxing and euphoric effects, this strain is ideal for evening use.",
+      "effects": ["Relaxed", "Euphoric", "Happy"]
+    },
+    {
+      "name": "Cherry Pie",
+      "classification": "Hybrid",
+      "description": "Cherry Pie is a delightful cross between Granddaddy Purple and Durban Poison, combining the best traits of its parent strains. The buds are dense and covered in orange hairs, emitting a sweet and sour cherry aroma with hints of blueberry and earthy spice. Celebrated for its balanced effects, Cherry Pie has gained popularity among artists and musicians.",
+      "effects": ["Happy", "Relaxed", "Creative"]
+    },
+    {
+      "name": "Biscotti",
+      "classification": ["Hybrid", "Indica"],
+      "description": "Biscotti is an indica-dominant hybrid with a rich heritage, blending GSC, Gelato #25, and South Florida OG. Known for its sweet, earthy aroma with hints of spice, it delivers a relaxing and euphoric high. Biscotti's dense, frosty buds and dessert-like flavor profile make it a top choice for many",
+      "effects":["Relaxed", "Happy", "Social"]
+    },
+    {
+      "name": "Bubba Kush",
+      "classification": "Hybrid",
+      "description": "Bubba Kush is a classic indica strain with roots tracing back to the Hindu Kush mountains, known for its potent relaxing effects. The strain boasts bulky, dense buds with a unique aroma of coffee and chocolate, complemented by subtle earthy undertones.",
+      "effects": ["Relaxed", "Sleepy", "Happy"]
+    },
+    {
+      "name": "Green Crack",
+      "classification": "Sativa",
+      "description": "Green Crack, a pure sativa, delivers an energizing and focused high, perfect for daytime use. Originally named 'Cush' this strain's mango-citrus aroma and cerebral effects earned it the nickname 'Green Crack' from Snoop Dogg. Known for its easy-to-grow nature and stimulating properties, it’s a favorite for creative and active users.",
+      "effects":["Focused", "Energized", "Uplifted"]
+    }
+  ]
+  
