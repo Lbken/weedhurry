@@ -12,8 +12,16 @@ const baseURL = isDevelopment ? ENV.development : ENV.production;
 
 const api = axios.create({
     baseURL,
-    withCredentials: true,
-    timeout: 10000, // Add timeout for better error handling
+    withCredentials: true, // This is crucial for sending cookies
+    timeout: 10000,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+    // Add retry logic for failed requests
+    retry: 3,
+    retryDelay: (retryCount) => {
+        return retryCount * 1000;
+    }
 });
 
 // Interceptor to handle 401 errors and refresh tokens

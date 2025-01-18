@@ -239,7 +239,7 @@ const refreshToken = async (req, res) => {
         const accessToken = jwt.sign(
             { id: vendor._id },
             process.env.JWT_SECRET,
-            { expiresIn: '7d' }
+            { expiresIn: '1h' }
         );
 
         res.cookie('accessToken', accessToken, {

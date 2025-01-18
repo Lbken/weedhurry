@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import api from '../api/api'; // Update this import path
+import api from '../utils/api';
 
 export const AuthContext = createContext();
 
@@ -9,25 +9,20 @@ export const AuthProvider = ({ children }) => {
     const [auth, setAuth] = useState(null);
     const [loading, setLoading] = useState(true);
 
-    // Updated to match api.js cookie handling
+    // Helper function to clear auth state and cookies
     const clearAuthState = () => {
         setAuth(null);
-        const isDevelopment = process.env.NODE_ENV === 'development';
-        const domain = isDevelopment ? 'localhost' : '.weedhurry.com';
-        
-        // Use same cookie options as api.js
-        const cookieOptions = `Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; ${
-            !isDevelopment ? `Domain=${domain};` : ''
-        } ${!isDevelopment ? 'Secure; SameSite=None' : ''}`;
-        
-        document.cookie = `accessToken=; ${cookieOptions}`;
-        document.cookie = `refreshToken=; ${cookieOptions}`;
+        // Clear cookies with all necessary attributes
+        document.cookie = 'accessToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.weedhurry.com; Secure; SameSite=None';
+        document.cookie = 'refreshToken=; Path=/; Expires=Thu, 01 Jan 1970 00:00:01 GMT; Domain=.weedhurry.com; Secure; SameSite=None';
     };
 
+    // Function to log in the user
     const login = async (vendorId) => {
         setAuth({ vendorId });
     };
 
+    // Function to log out the user
     const logout = async () => {
         try {
             console.log('Starting logout process...');
@@ -45,21 +40,34 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // Function to check authentication status
     const checkAuthStatus = async () => {
+        // Skip auth check for public routes
         if (publicRoutes.includes(window.location.pathname)) {
             setLoading(false);
             return;
         }
 
         try {
-            const response = await api.get('/auth/validate');
-            // No need to specify withCredentials as it's set in api.js
+            const response = await api.get('/auth/validate', {
+                withCredentials: true
+            });
 
             if (response.data?.success) {
                 setAuth({ vendorId: response.data.vendorId });
             } else {
-                // Let the api.js interceptor handle token refresh
-                clearAuthState();
+                try {
+                    await api.post('/auth/refresh-token');
+                    const validationResponse = await api.get('/auth/validate');
+                    if (validationResponse.data?.success) {
+                        setAuth({ vendorId: validationResponse.data.vendorId });
+                    } else {
+                        clearAuthState();
+                    }
+                } catch (refreshError) {
+                    console.error('Token refresh failed:', refreshError);
+                    clearAuthState();
+                }
             }
         } catch (error) {
             console.error('Auth check failed:', error);
@@ -69,14 +77,16 @@ export const AuthProvider = ({ children }) => {
         }
     };
 
+    // Check auth status on mount and route change
     useEffect(() => {
         const handleRouteChange = () => {
-            if (!publicRoutes.includes(window.location.pathname)) {
-                checkAuthStatus();
-            }
+            checkAuthStatus();
         };
 
+        // Initial check
         checkAuthStatus();
+
+        // Listen for route changes
         window.addEventListener('popstate', handleRouteChange);
 
         return () => {
@@ -94,8 +104,7 @@ export const AuthProvider = ({ children }) => {
 
     return (
         <AuthContext.Provider value={contextValue}>
-            {loading && !publicRoutes.includes(window.location.pathname) ? 
-                <div>Loading...</div> : children}
+            {loading ? <div>Loading...</div> : children}
         </AuthContext.Provider>
     );
 };

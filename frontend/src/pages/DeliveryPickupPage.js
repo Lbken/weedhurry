@@ -1,6 +1,7 @@
 import React, { useEffect, useState, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
 import DeliveryPickupWrapper from '../components/DeliveryPickupWrapper';
+import api from '../api/api';
 import './DeliveryPickupPage.css';
 
 const DeliveryPickupPage = () => {
@@ -9,13 +10,10 @@ const DeliveryPickupPage = () => {
   const [animate, setAnimate] = useState(false);
 
   const navigate = useNavigate();
-  const BASE_URL = process.env.REACT_APP_API_BASE_URL || 'https://api.weedhurry.com';
 
   useEffect(() => {
-    // Trigger slide-in animation on mount
     setAnimate(true);
 
-    // Parse the saved address from localStorage
     const savedAddress = localStorage.getItem('userAddress');
     if (savedAddress) {
       const parts = savedAddress.split(',');
@@ -37,77 +35,84 @@ const DeliveryPickupPage = () => {
       Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
       Math.sin(dLng / 2) * Math.sin(dLng / 2);
     const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
-    return R * c; // Distance in miles
+    return R * c;
   };
 
   const fetchVendors = useCallback(async () => {
     const address = localStorage.getItem('userAddress');
-    if (!address) return;
+    if (!address) {
+      console.log('No address found in localStorage');
+      return;
+    }
 
     try {
-      // Fetch coordinates of user's saved address
+      // Get coordinates from Google Geocoding API
       const geocodeResponse = await fetch(
         `https://maps.googleapis.com/maps/api/geocode/json?address=${encodeURIComponent(
           address
         )}&key=${process.env.REACT_APP_GOOGLE_MAPS_API_KEY}`
       );
       const geocodeData = await geocodeResponse.json();
-      if (geocodeData.status !== 'OK') return;
+      
+      if (geocodeData.status !== 'OK') {
+        console.error('Geocoding failed:', geocodeData.status);
+        return;
+      }
 
       const { lat, lng } = geocodeData.results[0].geometry.location;
+      console.log('User coordinates:', { lat, lng });
 
-      // Fetch vendors nearby
-      const vendorsResponse = await fetch(`${BASE_URL}/api/vendors/nearby?lat=${lat}&lng=${lng}`, {
-        credentials: 'include',
-        headers: {
-          'Content-Type': 'application/json'
-        }
+      // Fetch vendors using configured axios instance
+      const { data: vendorsData } = await api.get('/api/map/map-vendors', {
+        params: { lat, lng }
       });
-      const vendorsData = await vendorsResponse.json();
 
-      if (!vendorsData.vendors || vendorsData.vendors.length === 0) return;
+      if (!vendorsData?.vendors || !Array.isArray(vendorsData.vendors)) {
+        console.log('No vendors found or invalid response format');
+        return;
+      }
 
-      // Calculate distance for each vendor
-      // In DeliveryPickupPage.js, update this section:
-const vendorsWithDistance = vendorsData.vendors.map((vendor) => {
-  // First get the appropriate coordinates
-  let coordinates = null;
-  if (vendor.deliveryZone?.coordinates) {
-    coordinates = vendor.deliveryZone.coordinates;
-  } else if (vendor.storefrontAddress?.coordinates) {
-    coordinates = vendor.storefrontAddress.coordinates;
-  }
+      const vendorsWithDistance = vendorsData.vendors.map((vendor) => {
+        let coordinates = null;
+        if (vendor.deliveryZone?.coordinates) {
+          coordinates = vendor.deliveryZone.coordinates;
+        } else if (vendor.storefrontAddress?.coordinates) {
+          coordinates = vendor.storefrontAddress.coordinates;
+        }
 
-  if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
-    console.warn(`Vendor ${vendor.dispensaryName} has invalid coordinates`);
-    return null;
-  }
+        if (!coordinates || !Array.isArray(coordinates) || coordinates.length !== 2) {
+          console.warn(`Vendor ${vendor.dispensaryName} has invalid coordinates`);
+          return null;
+        }
 
-  // Handle potential MongoDB $numberDouble format
-  const [vLng, vLat] = coordinates.map(coord => 
-    typeof coord === 'object' ? parseFloat(coord.$numberDouble) : parseFloat(coord)
-  );
+        const [vLng, vLat] = coordinates.map(coord => 
+          typeof coord === 'object' ? parseFloat(coord.$numberDouble || coord.$numberInt) : parseFloat(coord)
+        );
 
-  if (isNaN(vLat) || isNaN(vLng)) {
-    console.warn(`Invalid coordinate values for vendor ${vendor.dispensaryName}`);
-    return null;
-  }
+        if (isNaN(vLat) || isNaN(vLng)) {
+          console.warn(`Invalid coordinate values for vendor ${vendor.dispensaryName}`);
+          return null;
+        }
 
-  const milesAway = calculateDistance(lat, lng, vLat, vLng);
-  return { 
-    ...vendor, 
-    coordinates: [vLng, vLat],
-    milesAway: milesAway.toFixed(1) 
-  };
-}).filter(Boolean); // Remove any null entries
+        const milesAway = calculateDistance(lat, lng, vLat, vLng);
+        return {
+          ...vendor,
+          coordinates: [vLng, vLat],
+          milesAway: milesAway.toFixed(1)
+        };
+      }).filter(Boolean);
 
-setVendors(vendorsWithDistance);
-
+      console.log(`Found ${vendorsWithDistance.length} valid vendors`);
       setVendors(vendorsWithDistance);
-    } catch (err) {
-      console.error('Error fetching vendors:', err);
+
+    } catch (error) {
+      console.error('Error fetching vendors:', {
+        message: error.message,
+        response: error.response?.data,
+        status: error.response?.status
+      });
     }
-  }, [BASE_URL]);
+  }, []);
 
   useEffect(() => {
     fetchVendors();
