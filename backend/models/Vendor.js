@@ -105,7 +105,7 @@ const VendorSchema = new mongoose.Schema({
                 return coords;
             }
         },
-        formatted: { type: String, required: true }
+        formatted: { type: String }
     },
     
     businessHours: {

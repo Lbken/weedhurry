@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Modal, Form, Alert, Button, Row, Col } from 'react-bootstrap';
 import { X, Plus, Image as ImageIcon } from 'lucide-react';
+import axios from 'axios';
 
 const CreateProductModal = ({ show, onClose, onSubmit }) => {
   const [formData, setFormData] = useState({
@@ -87,9 +88,9 @@ const CreateProductModal = ({ show, onClose, onSubmit }) => {
   ];
 
   const categoryAmounts = {
-    Flower: ['3.5g', '7g', 'Half-Oz', 'Ounce'],
+    Flower: ['3.5g', '7g', '½oz', '1oz'],
     Vape: ['0.3g', '0.5g', '1g'],
-    'Pre-roll': ['1g', '2.5g', '3.5g', '5g', '7g'],
+    'Pre-roll': ['1g', '1.2g', '2.5g', '3g', '3.5g', '4g', '5g', '7g'],
     Edible: ['5mg', '20mg', '25mg', '50mg', '100mg', '150mg', '200mg', '300mg', '500mg', '1000mg'],
     Concentrate: ['0.5g', '1g'],
     Tincture: ['500mg', '1000mg'],
@@ -249,9 +250,62 @@ const CreateProductModal = ({ show, onClose, onSubmit }) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (validateForm()) {
-      try {
-        await onSubmit(formData);
+    if (!validateForm()) return;
+
+    try {
+        // Step 1: Create the base product in catalog
+        const productData = new FormData();
+        productData.append('name', formData.name);
+        productData.append('brand', formData.brand);
+        productData.append('category', formData.category);
+        productData.append('description', formData.description);
+        
+        // Get unique amounts for the base product
+        const uniqueAmounts = [...new Set(formData.variations.map(v => v.amount))];
+        productData.append('amount', JSON.stringify(uniqueAmounts));
+
+        // Add all variation images to the product catalog
+        formData.variations.forEach((variation, index) => {
+            if (variation.image) {
+                productData.append('images', variation.image);
+            }
+        });
+
+        // Create base product with all images
+        const productResponse = await axios.post('/api/products', productData, {
+            headers: { 'Content-Type': 'multipart/form-data' },
+            withCredentials: true
+        });
+
+        // Step 2: Create vendor products for each variation using catalog images
+        const creationPromises = formData.variations.map((variation, index) => {
+            // Use the corresponding image URL from the product catalog
+            const imageUrl = productResponse.data.images[index];
+
+            // Create vendor product
+            return axios.post('/api/vendor-products', {
+                productId: productResponse.data._id,
+                name: formData.name,
+                brand: formData.brand,
+                category: formData.category,
+                description: formData.description,
+                amounts: uniqueAmounts,
+                variation: {
+                    amount: variation.amount,
+                    strain: variation.strain,
+                    thcContent: variation.thcContent || null,
+                    price: parseFloat(variation.price),
+                    salePrice: variation.salePrice ? parseFloat(variation.salePrice) : null,
+                    image: imageUrl,
+                    tags: []
+                }
+            }, {
+                withCredentials: true
+            });
+        });
+
+        await Promise.all(creationPromises);
+
         // Reset form state
         setFormData(initialFormState);
         // Reset image URLs
@@ -263,11 +317,11 @@ const CreateProductModal = ({ show, onClose, onSubmit }) => {
         setActiveDropdownIndex(null);
         // Close modal
         onClose();
-      } catch (error) {
-        console.error('Error submitting form:', error);
-      }
+    } catch (error) {
+        console.error('Error creating products:', error);
+        // Show error to user
     }
-  };
+};
 
   return (
     <Modal show={show} onHide={onClose} size="xl">
@@ -332,7 +386,7 @@ const CreateProductModal = ({ show, onClose, onSubmit }) => {
                 <Form.Control
                   as="textarea"
                   name="description"
-                  placeholder="Include broad description of product. Do NOT include strain "
+                  placeholder="Provide brief descriprtion of product-- DO NOT include strain-specific info."
                   value={formData.description}
                   onChange={handleInputChange}
                   rows={3}
@@ -396,7 +450,7 @@ const CreateProductModal = ({ show, onClose, onSubmit }) => {
 
                   <Col md={6}>
                     <Form.Group className="mb-3">
-                      <Form.Label className="fw-semibold">Strain</Form.Label>
+                      <Form.Label className="fw-semibold">Strain / Flavor</Form.Label>
                       <div className="position-relative">
                         <Form.Control
                           type="text"

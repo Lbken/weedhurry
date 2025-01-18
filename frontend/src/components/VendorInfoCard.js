@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Modal, Form, Alert } from 'react-bootstrap';
 import axios from 'axios';
-import api from '../api/api';
+import api from '../utils/api';
 
 const VendorInfoCard = () => {
     const [vendor, setVendor] = useState({});

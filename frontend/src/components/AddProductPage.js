@@ -341,10 +341,6 @@ setFilteredStrains(response.data);
                     )}
                     <div>
                       <strong>{product.brand}</strong> - {product.name}
-                      <br />
-                      <small className="text-muted">
-                        Available amounts: {product.amount?.join(', ')}
-                      </small>
                     </div>
                   </div>
                 </li>
@@ -413,24 +409,24 @@ setFilteredStrains(response.data);
 
               {/* Amount Selection */}
               {category !== 'Gear' && (
-                <div className="mb-3">
-                  <label className="form-label fw-semibold">Amount</label>
-                  <select
-                    className="form-select"
-                    value={variation.amount}
-                    onChange={(e) => handleVariationChange(index,'amount', e.target.value)}
-                    >
-                      <option value="" disabled>Select Amount</option>
-                      {selectedProduct?.amount?.map((option, i) => (
-                        <option key={i} value={option}>{option}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+        <div className="mb-3">
+          <label className="form-label fw-semibold">Amount</label>
+          <select
+            className="form-select"
+            value={variation.amount}
+            onChange={(e) => handleVariationChange(index, 'amount', e.target.value)}
+          >
+            <option value="" disabled>Select Amount</option>
+            {Array.from(new Set(selectedProduct?.amount || [])).map((option, i) => (
+              <option key={i} value={option}>{option}</option>
+            ))}
+          </select>
+        </div>
+      )}
   
                 {/* Strain Input */}
                 <div className="mb-3 position-relative">
-                  <label className="form-label fw-semibold">Strain</label>
+                  <label className="form-label fw-semibold">Strain/Flavor</label>
                   <input
                     type="text"
                     className="form-control"

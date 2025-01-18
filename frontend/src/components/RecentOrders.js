@@ -46,7 +46,6 @@ const RecentOrders = () => {
         console.log('Server response:', response.data);
         
         if (response.data.success) {
-            // Update local state with the returned data
             setOrders(prevOrders =>
                 prevOrders.map(order =>
                     order._id === orderId ? response.data.data : order
@@ -62,7 +61,7 @@ const RecentOrders = () => {
         console.error('Error updating order status:', error);
         alert(error.response?.data?.message || 'Failed to update order status');
     }
-};
+  };
 
   const formatBirthdate = (date) => {
     return new Date(date).toLocaleDateString('en-US', {
@@ -101,8 +100,8 @@ const RecentOrders = () => {
   };
 
   const imageStyle = {
-    width: '50px',
-    height: '50px',
+    width: '60px',
+    height: '60px',
     objectFit: 'cover',
     borderRadius: '4px'
   };
@@ -170,9 +169,15 @@ const RecentOrders = () => {
                       <h6 className="mb-2">Customer Information</h6>
                       <Card className="bg-light">
                         <Card.Body>
-                          <p className="mb-1">{order.contactInfo?.firstName} {order.contactInfo?.lastName}</p>
-                          <p className="mb-1 text-muted">DOB: {formatBirthdate(order.customer?.birthdate)}</p>
-                          <p className="mb-1 text-muted">{order.contactInfo?.email}</p>
+                          <p className="mb-1">
+                            {order.contactInfo?.firstName} {order.contactInfo?.lastName}
+                          </p>
+                          <p className="mb-1 text-muted">
+                            DOB: {formatBirthdate(order.customer?.birthdate)}
+                          </p>
+                          <p className="mb-1 text-muted">
+                            Payment Method: {order.payment_method}
+                          </p>
                           <div className="d-flex justify-content-between align-items-center">
                             <span className="text-muted">{order.contactInfo?.phone}</span>
                             <button 
@@ -256,25 +261,13 @@ const RecentOrders = () => {
                               />
                             )}
                             <div className="flex-grow-1">
-                              <div className="fw-medium">{item.name}</div>
-                              <div className="text-muted small">
-                                {item.salePrice ? (
-                                  <>
-                                    <span className="text-decoration-line-through me-2">
-                                      ${item.price?.toFixed(2)}
-                                    </span>
-                                    <span className="text-danger">
-                                      ${item.salePrice?.toFixed(2)}
-                                    </span>
-                                  </>
-                                ) : (
-                                  <span>${item.price?.toFixed(2)}</span>
-                                )}
-                                {' x '}{item.quantity}
-                              </div>
+                              <div className="fw-medium">{item.name}{'   x '}{item.quantity}</div>
                               {item.category && (
-                                <div className="text-muted small">{item.category}</div>
+                                <div className="text-muted small">{item.brand}{' - '}{item.category}</div>
                               )}
+                                <div className="text-muted small">
+                                  {item.strain && <span>{item.strain}</span>}
+                                </div>
                             </div>
                             <div className="fw-medium">
                               ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
@@ -294,7 +287,7 @@ const RecentOrders = () => {
                           </span>
                         </div>
                         <div className="d-flex justify-content-between fw-bold">
-                          <span>Total</span>
+                          <span>Total (w/ fees)</span>
                           <span>${order.total?.toFixed(2)}</span>
                         </div>
                       </Card.Body>

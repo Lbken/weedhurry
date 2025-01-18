@@ -1,5 +1,6 @@
 const multer = require('multer');
 const s3 = require('./s3'); // Import your configured S3 instance
+const sharp = require('sharp');
 
 // File size limit in bytes (2MB)
 const MAX_FILE_SIZE = 2 * 1024 * 1024; // 2MB
@@ -69,6 +70,65 @@ const handleLogoUpload = async (req, res, next) => {
     });
 };
 
+// fileUpload.js
+const handleBulkProductImageUpload = async (req, res, next) => {
+    const upload = multer({
+        storage: multer.memoryStorage(),
+        limits: {
+            fileSize: 2 * 1024 * 1024,
+            files: 20,
+            fieldSize: 25 * 1024 * 1024 // 25MB total payload
+        },
+        fileFilter: (req, file, cb) => {
+            if (!['image/jpeg', 'image/png'].includes(file.mimetype)) {
+                return cb(new Error('Invalid file type'));
+            }
+            cb(null, true);
+        }
+    }).array('images', 20);
+
+    upload(req, res, async (err) => {
+        if (err) {
+            return res.status(400).json({
+                error: err.code === 'LIMIT_FILE_SIZE' ? 
+                    'File size exceeds 2MB limit' : 
+                    'Upload error: ' + err.message
+            });
+        }
+
+        try {
+            if (!req.files?.length) {
+                return res.status(400).json({ error: 'No files uploaded' });
+            }
+
+            const uploadPromises = req.files.map(async (file, index) => {
+                try {
+                    const compressedBuffer = await sharp(file.buffer)
+                        .resize(800, 800, { fit: 'inside' })
+                        .jpeg({ quality: 80 })
+                        .toBuffer();
+
+                    const result = await uploadToS3({
+                        ...file,
+                        buffer: compressedBuffer
+                    }, process.env.S3_PRODUCT_BUCKET_NAME);
+
+                    return { index, ...result };
+                } catch (err) {
+                    console.error(`Error processing image ${index}:`, err);
+                    throw err;
+                }
+            });
+
+            req.uploadedImages = await Promise.all(uploadPromises);
+            next();
+        } catch (err) {
+            console.error('Bulk upload error:', err);
+            res.status(500).json({ error: 'Failed to process images' });
+        }
+    });
+};
+
 
 // Middleware to handle promo uploads
 const handlePromoUpload = async (req, res, next) => {
@@ -128,4 +188,4 @@ const handleProductImageUpload = async (req, res, next) => {
     });
 };
 
-module.exports = { handleLogoUpload, handlePromoUpload, uploadToS3, handleProductImageUpload };
+module.exports = { handleLogoUpload, handlePromoUpload, uploadToS3, handleProductImageUpload, handleBulkProductImageUpload };

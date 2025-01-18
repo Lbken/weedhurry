@@ -18,13 +18,12 @@ import ResetPassword from './components/ResetPassword';
 import ContactPage from "./pages/ContactPage";
 import AddStrainForm from "./pages/AddStrainForm";
 import './styles.css';
-import VendorDisplay from "./components/VendorDisplay";
-import VendorMapNew from "./components/VendorMapNew";
-import CombinedVendorView from "./components/CombinedVendorView";
 
 
 function AppWrapper() {
     const location = useLocation();
+
+    
     const hideNavbarRoutes = ["/register", "/checkout", "/", "/vendor-dashboard", "/nearby"];
     const shouldShowNavbar = !hideNavbarRoutes.includes(location.pathname);
 
@@ -39,7 +38,6 @@ function AppWrapper() {
                 <Route path="/checkout" element={<CheckoutPage />} />
                 <Route path="/register" element={<RegistrationPage />} />
                 <Route path="/login" element={<Login />} />
-                <Route path="/test" element={<CombinedVendorView />} />
                 <Route path="/contact" element={<ContactPage />} />
                 <Route path="/add-strain" element={<AddStrainForm />} />
                 <Route path="/reset-password-request" element={<ResetPasswordRequest />} />

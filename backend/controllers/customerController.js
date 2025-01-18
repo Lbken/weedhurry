@@ -45,7 +45,9 @@ const handleCustomerAndOrder = async (req, res) => {
         quantity: item.quantity,
         price: item.price,
         salePrice: item.salePrice,
-        image: item.image
+        image: item.image,
+        brand: item.brand,
+        strain: item.strain,
       })),
       deliveryAddress: orderDetails.delivery_address,
       vendorDetails: orderDetails.vendorDetails,

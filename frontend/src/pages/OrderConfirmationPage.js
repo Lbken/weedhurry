@@ -1,6 +1,7 @@
 import React from 'react';
 import { Card, Table, Button } from 'react-bootstrap';
 import { useLocation } from 'react-router-dom';
+import Footer from '../components/Footer';
 
 const OrderConfirmationPage = () => {
   const location = useLocation();
@@ -14,7 +15,7 @@ const OrderConfirmationPage = () => {
     <Card className="shadow-sm mb-4">
       <Card.Body className="text-center">
         <h4 className="mb-3">Thank You For Your Order!</h4>
-        <p className="mb-1">Your order has been received and the vendor has been notified.</p>
+        <p className="mb-1">Your order has been received and {order.vendorDetails.dispensaryName} has been notified.</p>
         {order.orderType === 'Pickup' ? (
           <p className="text-success">
             You will receive a text message when your order is ready for pickup. 
@@ -76,93 +77,117 @@ const OrderConfirmationPage = () => {
   };
 
   return (
-    <div className="container mt-5">
-      {renderThankYouMessage()}
-      
-      <Card className="shadow-sm">
-        <Card.Header className="bg-primary text-white">
-          <h3 className="mb-0">Order Confirmation</h3>
-        </Card.Header>
-        <Card.Body>
-          {/* Order Details */}
-          <div className="mb-4">
-            <h5>Order Details</h5>
-            <p className="mb-0"><strong>Order ID:</strong> {order._id}</p>
-            <p className="mb-0"><strong>Order Type:</strong> {order.orderType}</p>
-            <p className="mb-0"><strong>Status:</strong> {order.status}</p>
-            <p className="mb-0"><strong>Total Amount:</strong> ${order.total.toFixed(2)}</p>
-            <p className="mb-0"><strong>Payment Method:</strong> {order.payment_method}</p>
-          </div>
+    <>
+      <div className="container mt-5 mb-5">
+        {renderThankYouMessage()}
+        
+        <Card className="shadow-sm">
+          <Card.Header className="bg-primary text-white">
+            <h3 className="mb-0">Order Confirmation</h3>
+          </Card.Header>
+          <Card.Body>
+            {/* Order Details */}
+            <div className="mb-4">
+              <h5>Order Details</h5>
+              <p className="mb-0"><strong>Order ID:</strong> {order._id}</p>
+              <p className="mb-0"><strong>Order Type:</strong> {order.orderType}</p>
+              <p className="mb-0"><strong>Status:</strong> {order.status}</p>
+              <p className="mb-0"><strong>Total Amount:</strong> ${order.total.toFixed(2)}</p>
+              <p className="mb-0"><strong>Payment Method:</strong> {order.payment_method}</p>
+            </div>
 
-          {/* Contact Information */}
-          <div className="mb-4">
-            <h5>Contact Information</h5>
-            <p className="mb-0">
-              {order.contactInfo.firstName} {order.contactInfo.lastName}
-            </p>
-            <p className="mb-0">{order.contactInfo.email}</p>
-            <p className="mb-0">{order.contactInfo.phone}</p>
-          </div>
+            {/* Contact Information */}
+            <div className="mb-4">
+              <h5>Contact Information</h5>
+              <p className="mb-0">
+                {order.contactInfo.firstName} {order.contactInfo.lastName}
+              </p>
+              <p className="mb-0">{order.contactInfo.email}</p>
+              <p className="mb-0">{order.contactInfo.phone}</p>
+            </div>
 
-          {/* Render Address Section */}
-          {renderAddressSection()}
+            {/* Render Address Section */}
+            {renderAddressSection()}
 
-          {/* Items Table */}
-          <div>
-            <h5>Order Summary</h5>
-            <Table striped bordered hover responsive>
-              <thead>
-                <tr>
-                  <th>Product Name</th>
-                  <th>Quantity</th>
-                  <th>Price</th>
-                  <th>Total</th>
-                </tr>
-              </thead>
-              <tbody>
-                {cartItemsSummary.map((item, index) => (
-                  <tr key={index}>
-                    <td>{item.name}</td>
-                    <td>{item.quantity}</td>
-                    <td>
-                      {item.salePrice ? (
-                        <div>
-                          <span className="text-danger">${item.salePrice.toFixed(2)}</span>
-                          <br />
-                          <span className="text-muted text-decoration-line-through">
-                            ${item.price.toFixed(2)}
-                          </span>
-                        </div>
-                      ) : (
-                        <span>${item.price.toFixed(2)}</span>
-                      )}
-                    </td>
-                    <td>
-                      ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-              <tfoot>
-                <tr>
-                  <td colSpan="3" className="text-end"><strong>Total:</strong></td>
-                  <td><strong>${order.total.toFixed(2)}</strong></td>
-                </tr>
-              </tfoot>
-            </Table>
-          </div>
+            {/* Items Table */}
+<div>
+  <h5>Order Summary</h5>
+  <Table striped bordered hover responsive>
+    <thead>
+      <tr>
+        <th>Product</th>
+        <th>Details</th>
+        <th>Quantity</th>
+        <th>Price</th>
+        <th>Total</th>
+      </tr>
+    </thead>
+    <tbody>
+      {cartItemsSummary.map((item, index) => (
+        <tr key={index}>
+          <td className="align-middle" style={{ width: '100px' }}>
+            <img 
+              src={item.image} 
+              alt={item.name}
+              className="img-fluid rounded"
+              style={{ 
+                width: '80px', 
+                height: '80px', 
+                objectFit: 'cover'
+              }}
+            />
+          </td>
+          <td className="align-middle">
+            <div className="d-flex flex-column">
+              <strong>{item.name}</strong>
+              <small className="text-muted">{item.brand}</small>
+              {item.strain && (
+                <small className="text-muted">{item.strain}</small>
+              )}
+            </div>
+          </td>
+          <td className="align-middle">{item.quantity}</td>
+          <td className="align-middle">
+            {item.salePrice ? (
+              <div>
+                <span className="text-danger">${item.salePrice.toFixed(2)}</span>
+                <br />
+                <span className="text-muted text-decoration-line-through">
+                  ${item.price.toFixed(2)}
+                </span>
+              </div>
+            ) : (
+              <span>${item.price.toFixed(2)}</span>
+            )}
+          </td>
+          <td className="align-middle">
+            ${((item.salePrice || item.price) * item.quantity).toFixed(2)}
+          </td>
+        </tr>
+      ))}
+    </tbody>
+    <tfoot>
+      <tr>
+        <td colSpan="4" className="text-end"><strong>Total:</strong></td>
+        <td><strong>${order.total.toFixed(2)}</strong></td>
+      </tr>
+    </tfoot>
+  </Table>
+</div>
 
-          {/* Continue Shopping Button */}
-          <Button
-            variant="primary"
-            className="mt-4"
-            onClick={() => window.location.href = '/nearby'}
-          >
-            Continue Shopping
-          </Button>
-        </Card.Body>
-      </Card>
-    </div>
+            {/* Continue Shopping Button */}
+            <Button
+              variant="primary"
+              className="mt-4"
+              onClick={() => window.location.href = '/nearby'}
+            >
+              Continue Shopping
+            </Button>
+          </Card.Body>
+        </Card>
+      </div>
+      <Footer />
+    </>
   );
 };
 

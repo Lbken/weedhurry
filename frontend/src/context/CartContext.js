@@ -34,8 +34,8 @@ export const CartProvider = ({ children }) => {
   };
 
   const addToCart = (product) => {
-    console.log("Attempting to add product to cart:", product); // Debug: Product details
-    console.log("Current cart items before adding:", cartItems); // Debug: Cart state before update
+    console.log("Attempting to add product to cart:", product);
+    console.log("Current cart items before adding:", cartItems);
   
     if (canAddToCart(product)) {
       setCartItems((prevItems) => {
@@ -45,24 +45,32 @@ export const CartProvider = ({ children }) => {
         );
   
         if (existingItem) {
-          console.log("Product already in cart, incrementing quantity:", existingItem); // Debug: Existing product match
+          console.log("Product already in cart, incrementing quantity:", existingItem);
           return prevItems.map((item) =>
             `${item._id}-${item.strain}-${item.amount}` === uniqueKey
               ? { ...item, quantity: item.quantity + 1 }
               : item
           );
         } else {
-          console.log("Product not in cart, adding new product:", product); // Debug: Adding new product
+          console.log("Product not in cart, adding new product:", product);
+          // Ensure vendorId is properly handled
+          const vendorId = product.vendorId?.toString() || product._id?.toString();
           return [
             ...prevItems,
             {
               ...product,
               quantity: 1,
-              productId: product._id,
-              vendorName: product.vendorName,
+              productId: product._id?.toString(),  // Ensure string conversion
+              vendorId: vendorId,  // Use consistent vendorId
+              vendorName: product.dispensaryName || product.vendorName, // Handle both formats
               logoUrl: product.logoUrl,
-              vendorId: product.vendorId,
               orderType: product.orderType,
+              _id: product._id?.toString(),  // Ensure _id is consistent
+              variation: {
+                ...product.variation,
+                strain: product.variation?.strain || product.strain
+              },
+              strain: product.variation?.strain || product.strain 
             },
           ];
         }
@@ -70,16 +78,12 @@ export const CartProvider = ({ children }) => {
     } else {
       console.warn(
         `Cannot add product from different vendor (${product.vendorName}). Current vendor: ${cartItems[0]?.vendorName}`
-      ); // Debug: Different vendor warning
+      );
       alert(
         `You can only add products from the same vendor (${cartItems[0]?.vendorName}). Please clear your cart to add items from a different vendor.`
       );
     }
-  
-    console.log("Cart items after attempting to add product:", cartItems); // Debug: Cart state after update
   };
-  
-  
   
   
   

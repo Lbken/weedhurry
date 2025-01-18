@@ -1,56 +1,39 @@
 const VendorProduct = require('../models/VendorProduct');
 const Product = require('../models/Product');
 
-// Add a product to vendor's inventory
 const addProductToInventory = async (req, res) => {
   const vendorId = req.vendorId;
-  const { name, category, brand, description, amounts, variation } = req.body;
-
-  // Validation - removed stock check
-  if (!vendorId || !variation || !variation.price) {
-    return res.status(400).json({ message: 'Name, vendor ID, variation, and price are required.' });
-  }
+  const { productId, name, category, brand, description, amounts, variation } = req.body;
 
   try {
-    // Check for duplicate
-    const existingProduct = await VendorProduct.findOne({
-      vendorId,
-      name,
-      brand,
-      'variation.strain': variation.strain,
-      'variation.amount': variation.amount,
-    });
-
-    if (existingProduct) {
-      return res.status(400).json({ 
-        message: 'This product variation is already in your inventory.' 
+      // Create the vendor product
+      const newVendorProduct = new VendorProduct({
+          vendorId,
+          productId,  // Link to catalog product
+          name,
+          category,
+          brand,
+          description,
+          amounts,
+          variation: {
+              amount: variation.amount,
+              strain: variation.strain,
+              thcContent: variation.thcContent,
+              price: variation.price,
+              salePrice: variation.salePrice,
+              image: variation.image,
+              tags: []
+          }
       });
-    }
 
-    // Create and save the VendorProduct - removed stock
-    const newVendorProduct = new VendorProduct({
-      vendorId,
-      name,
-      category,
-      brand,
-      description,
-      amounts,
-      variation: {
-        amount: variation.amount,
-        strain: variation.strain,
-        thcContent: variation.thcContent,
-        price: variation.price,
-        salePrice: variation.salePrice,
-        image: variation.image,
-        tags: variation.tags || [],
-      }
-    });
-
-    await newVendorProduct.save();
-    res.json({ message: 'Product added to vendor inventory successfully!' });
+      await newVendorProduct.save();
+      res.status(201).json({ 
+          message: 'Product added to vendor inventory successfully!',
+          product: newVendorProduct
+      });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ message: 'Failed to add product to inventory.' });
+      console.error('Error adding product to inventory:', err);
+      res.status(500).json({ message: 'Failed to add product to inventory.' });
   }
 };
   

@@ -14,31 +14,28 @@ const getProductsByBrand = async (req, res) => {
 // Product creation with S3 image handling
 const createProduct = async (req, res) => {
   try {
-    const { name, brand, category, description, amount } = req.body;
+      const { name, brand, category, description, amount } = req.body;
 
-    // Get the S3 URLs from the uploaded files
-    // multer-s3 adds the 'location' property to each file
-    const images = req.files ? req.files.map(file => file.location) : [];
+      // Get all S3 URLs from the uploaded files
+      const images = req.files ? req.files.map(file => file.location) : [];
 
-    const product = new Product({
-      name,
-      brand,
-      category,
-      description,
-      amount: JSON.parse(amount),
-      images
-    });
+      const product = new Product({
+          name,
+          brand,
+          category,
+          description,
+          amount: JSON.parse(amount),
+          images  // Store all variation images
+      });
 
-    await product.save();
-    res.status(201).json(product);
+      await product.save();
+      res.status(201).json(product);
   } catch (error) {
-    console.error('Error creating product:', error);
-    // Send more detailed error for debugging
-    res.status(500).json({ 
-      error: 'Failed to create product',
-      details: error.message,
-      body: req.body 
-    });
+      console.error('Error creating product:', error);
+      res.status(500).json({ 
+          error: 'Failed to create product',
+          details: error.message 
+      });
   }
 };
 

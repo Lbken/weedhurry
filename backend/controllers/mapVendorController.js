@@ -1,6 +1,5 @@
 const Vendor = require('../models/Vendor');
 const VendorProduct = require('../models/VendorProduct');
-
 const getMapVendors = async (req, res) => {
     try {
         const vendors = await Vendor.find({
@@ -9,14 +8,12 @@ const getMapVendors = async (req, res) => {
         })
         .select('dispensaryName dispensaryType storefrontAddress logoUrl businessHours minOrder acceptedPayments dailyPromo')
         .lean();
-
         if (!vendors || vendors.length === 0) {
             return res.status(200).json({
                 success: true,
                 vendors: []
             });
         }
-
         // Process vendors to ensure proper ID and coordinate handling
         const processedVendors = vendors.map(vendor => {
             const processed = { ...vendor };
@@ -43,7 +40,6 @@ const getMapVendors = async (req, res) => {
             vendor.storefrontAddress?.coordinates?.length === 2 &&
             !vendor.storefrontAddress.coordinates.some(isNaN)
         );
-
         // Get products for vendors
         const vendorIds = processedVendors.map(vendor => vendor._id);
         const allVendorProducts = await VendorProduct.find({
@@ -52,7 +48,6 @@ const getMapVendors = async (req, res) => {
         })
         .select('vendorId name brand category strain variation')
         .lean();
-
         // Group products by vendor
         const productsByVendor = allVendorProducts.reduce((acc, product) => {
             const vendorId = product.vendorId.toString();
@@ -77,7 +72,6 @@ const getMapVendors = async (req, res) => {
             acc[vendorId].push(transformedProduct);
             return acc;
         }, {});
-
         // Combine vendor data with their products
         const vendorsWithProducts = processedVendors.map(vendor => ({
             _id: vendor._id,  // Already converted to string above
@@ -91,12 +85,10 @@ const getMapVendors = async (req, res) => {
             dailyPromo: vendor.dailyPromo,
             products: productsByVendor[vendor._id] || []
         }));
-
         res.status(200).json({
             success: true,
             vendors: vendorsWithProducts
         });
-
     } catch (error) {
         console.error('Error in getMapVendors:', error);
         res.status(500).json({
@@ -105,5 +97,4 @@ const getMapVendors = async (req, res) => {
         });
     }
 };
-
 module.exports = { getMapVendors };

@@ -82,21 +82,43 @@ const PlaceOrder = () => {
     if (storedContactInfo) setContactInfo(storedContactInfo);
 
     const fetchVendorData = async () => {
-      const vendorId = cartItems[0]?.vendorId;
+      const cartItem = cartItems[0];
+      if (!cartItem) {
+        console.warn('No items in cart');
+        return;
+      }
+      // Get vendorId, handling different possible formats
+      const vendorId = cartItem.vendorId?.toString() || cartItem._id?.toString();
+      console.log('Attempting to fetch vendor with ID:', vendorId, 'Cart Item:', cartItem);
       if (vendorId) {
         try {
           const response = await api.get(`/api/vendors/${vendorId}`);
-          console.log('Vendor payment methods:', response.data.data.acceptedPayments);
-          setVendorDetails(response.data.data);
-          setVendorPaymentMethods(response.data.data.acceptedPayments || []);
+          if (response.data?.success) {
+            const vendorData = response.data.data;
+            console.log('Vendor data received:', vendorData);
+            setVendorDetails(vendorData);
+            if (Array.isArray(vendorData.acceptedPayments)) {
+              console.log('Setting payment methods:', vendorData.acceptedPayments);
+              setVendorPaymentMethods(vendorData.acceptedPayments);
+            } else {
+              console.warn('No accepted payments found in vendor data');
+              setVendorPaymentMethods([]);
+            }
+          } else {
+            console.error('Vendor data response was not successful:', response.data);
+          }
         } catch (error) {
-          console.error('Error fetching vendor data:', error);
+          console.error('Error fetching vendor data:', {
+            error,
+            cartItem,
+            vendorId,
+          });
         }
       }
     };
-
+  
     fetchVendorData();
-}, [cartItems]);
+  }, [cartItems]);
 
   // Setup Google Places Autocomplete
   useEffect(() => {
@@ -201,6 +223,8 @@ const PlaceOrder = () => {
           price: item.price,
           salePrice: item.salePrice || null,
           image: item.image,
+          brand: item.brand || item.variation?.brand,
+          strain: item.variation?.strain || item.strain || null,
         })),
         payment_method: paymentMethod,
         payment_fee: selectedPaymentFee,

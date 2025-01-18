@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Card, Button, Modal, Form, Badge, Alert } from 'react-bootstrap';
-import api from '../api/api';
+import api from '../utils/api';
 
 const DispensaryInfoCard = () => {
     const [dispensary, setDispensary] = useState({});

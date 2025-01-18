@@ -5,7 +5,7 @@ exports.getVendorOrders = async (req, res) => {
   const { vendorId } = req.params;
   try {
     const orders = await Order.find({ vendorId })
-      .select('total deliveryAddress items status createdAt contactInfo orderType customer')
+      .select('total deliveryAddress items status createdAt contactInfo orderType customer payment_method')
       .populate('customer', 'birthdate')
       .sort({ createdAt: -1 })
       .limit(10);
@@ -15,7 +15,9 @@ exports.getVendorOrders = async (req, res) => {
       if (order.items) {
         order.items = order.items.map(item => ({
           ...item,
-          image: item.image || '/placeholder-image.png' // Provide a fallback image
+          image: item.image || '/placeholder-image.png',
+          brand: item.brand || 'Unknown Brand',
+          strain: item.strain || 'N/A'
         }));
       }
     });

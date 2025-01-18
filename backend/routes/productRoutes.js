@@ -71,7 +71,7 @@ router.get('/brand/:brand', getProductsByBrand);
 router.get('/filters', getProductsByFilters);
 
 // Route to create new product with image upload to S3
-router.post('/', processAndUpload.array('images'), createProduct);
+router.post('/', handleBulkProductImageUpload, createProduct);
 
 // Route for bulk product creation
 router.post('/bulk', addProductsInBulk);
